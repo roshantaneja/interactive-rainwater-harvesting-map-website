@@ -5,7 +5,7 @@ import { useLoadScript, GoogleMap } from "@react-google-maps/api";
 
 const GoogleMapComponent = () => {
   const libraries = useMemo(() => ["places"], []);
-  const mapCenter = useMemo(() => ({ lat: 27.672932, lng: 85.311840 }), []);
+  const mapCenter = useMemo(() => ({ lat: 65.66, lng: -3.35 }), []);
   const mapOptions = useMemo<google.maps.MapOptions>(
     () => ({
       disableDefaultUI: true,
