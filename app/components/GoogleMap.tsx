@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { useLoadScript, GoogleMap } from "@react-google-maps/api";
+import { useLoadScript, GoogleMap, Libraries } from "@react-google-maps/api";
 
 const GoogleMapComponent = () => {
-  const libraries = useMemo(() => ["places"], []);
+  // Explicitly type the libraries as `Libraries`
+  const libraries: Libraries = ["places"];
+
   const mapCenter = useMemo(() => ({ lat: 65.66, lng: -3.35 }), []);
   const mapOptions = useMemo<google.maps.MapOptions>(
     () => ({
@@ -17,7 +19,7 @@ const GoogleMapComponent = () => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY as string,
-    libraries,
+    libraries, // use the typed `libraries`
   });
 
   if (loadError) {
@@ -37,7 +39,7 @@ const GoogleMapComponent = () => {
       mapContainerStyle={{ width: "100%", height: "100%" }}
       onLoad={(map) => console.log("Map loaded:", map)}
     >
-      {/* Add children components like markers here */}
+      {/* Add markers or other children here */}
     </GoogleMap>
   );
 };
