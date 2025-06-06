@@ -1,9 +1,21 @@
 "use client";
 
 import { useMemo } from "react";
-import { useLoadScript, GoogleMap, Libraries } from "@react-google-maps/api";
+import { useLoadScript, GoogleMap, Libraries, Marker } from "@react-google-maps/api";
 
-const GoogleMapComponent = () => {
+interface ImagePoint {
+  id: string;
+  lat: number;
+  lng: number;
+  imageUrl: string;
+  title?: string;
+}
+
+interface GoogleMapComponentProps {
+  imagePoints: ImagePoint[];
+}
+
+const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
   // Explicitly type the libraries as `Libraries`
   const libraries: Libraries = ["places"];
 
@@ -19,7 +31,7 @@ const GoogleMapComponent = () => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY as string,
-    libraries, // use the typed `libraries`
+    libraries,
   });
 
   if (loadError) {
@@ -39,7 +51,19 @@ const GoogleMapComponent = () => {
       mapContainerStyle={{ width: "100%", height: "100%" }}
       onLoad={(map) => console.log("Map loaded:", map)}
     >
-      {/* Add markers or other children here */}
+      {imagePoints.map((point) => (
+        <Marker
+          key={point.id}
+          position={{ lat: point.lat, lng: point.lng }}
+          title={point.title || `Image ${point.id}`}
+          icon={{
+            url: point.imageUrl,
+            scaledSize: new google.maps.Size(40, 40), // Adjust size as needed
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(20, 20), // Center the image
+          }}
+        />
+      ))}
     </GoogleMap>
   );
 };

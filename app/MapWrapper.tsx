@@ -8,6 +8,10 @@ const GoogleMapComponent = dynamic(() => import("./components/GoogleMap"), {
   ssr: false,
 });
 
-export default function MapWrapper() {
-  return <GoogleMapComponent />;
+interface MapWrapperProps {
+  csvData: any[];
+}
+
+export default function MapWrapper({ csvData }: MapWrapperProps) {
+  return <GoogleMapComponent csvData={csvData} />;
 }
