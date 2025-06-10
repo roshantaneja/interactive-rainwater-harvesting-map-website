@@ -46,38 +46,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className={styles.homeWrapper}>
-      <div className={styles.sidebar}>
-        <div className={styles.infoBox}>
-          <h3>Image Points: {imagePoints.length}</h3>
-          <p className={styles.uploadHint}>
-            Images are loaded from the /public/photos directory
-            <br />
-            Name format: longitude,latitude,title.jpg
-            <br />
-            Example: -3.30,36.24,33.jpg
-          </p>
-        </div>
-        <div>
-          {imagePoints.length > 0 && (
-            <div className={styles.imageList}>
-              {imagePoints.map((point) => (
-                <div key={point.id} className={styles.imageItem}>
-                  <img src={point.imageUrl} alt={point.title || 'Map point'} width={50} height={50} />
-                  <div>
-                    <p>Lat: {point.lat}</p>
-                    <p>Lng: {point.lng}</p>
-                    {point.title && <p>Title: {point.title}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className={styles.mapContainer}>
-        <MapWrapper imagePoints={imagePoints} />
-      </div>
+    <div className={styles.fullMapWrapper}>
+      <MapWrapper imagePoints={imagePoints} />
     </div>
   );
 }

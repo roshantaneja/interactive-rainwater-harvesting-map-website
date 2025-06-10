@@ -26,6 +26,14 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
       clickableIcons: true,
       scrollwheel: true,
       zoomControl: true,
+      mapTypeId: "satellite",
+      styles: [
+        {
+          featureType: "all",
+          elementType: "labels",
+          stylers: [{ visibility: "off" }],
+        },
+      ],
     }),
     []
   );
@@ -37,6 +45,21 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<ImagePoint | null>(null);
+
+  const NANJA_DAM = { lat: -3.3814908867140985, lng: 36.2832471881476 };
+
+  function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number) {
+    const toRad = (x: number) => (x * Math.PI) / 180;
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
 
   useEffect(() => {
     if (mapRef.current && imagePoints.length > 0) {
@@ -74,20 +97,26 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
         }
       }}
     >
-      {imagePoints.map((point) => (
-        <Marker
-          key={point.id}
-          position={{ lat: point.lat, lng: point.lng }}
-          title={point.title || `Image ${point.id}`}
-          icon={{
-            url: point.imageUrl,
-            scaledSize: new google.maps.Size(40, 40), // Adjust size as needed
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(20, 20), // Center the image
-          }}
-          onClick={() => setSelectedPoint(point)}
-        />
-      ))}
+      {imagePoints.map((point) => {
+        const distance = haversineDistance(point.lat, point.lng, NANJA_DAM.lat, NANJA_DAM.lng);
+        return (
+          <Marker
+            key={point.id}
+            position={{ lat: point.lat, lng: point.lng }}
+            title={
+              (point.title || `Image ${point.id}`) +
+              `\nDistance to Nanja Dam: ${distance.toFixed(2)} km`
+            }
+            icon={{
+              url: point.imageUrl,
+              scaledSize: new google.maps.Size(40, 40), // Adjust size as needed
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(20, 20), // Center the image
+            }}
+            onClick={() => setSelectedPoint(point)}
+          />
+        );
+      })}
       {selectedPoint && (
         <InfoWindow
           position={{ lat: selectedPoint.lat, lng: selectedPoint.lng }}
@@ -96,6 +125,9 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
           <div style={{ maxWidth: 300 }}>
             <img src={selectedPoint.imageUrl} alt={selectedPoint.title || 'Full size'} style={{ width: '100%', height: 'auto', borderRadius: 8 }} />
             {selectedPoint.title && <div style={{ marginTop: 8, fontWeight: 'bold' }}>{selectedPoint.title}</div>}
+            <div style={{ marginTop: 8 }}>
+              Distance to Nanja Dam: {haversineDistance(selectedPoint.lat, selectedPoint.lng, NANJA_DAM.lat, NANJA_DAM.lng).toFixed(2)} km
+            </div>
           </div>
         </InfoWindow>
       )}
