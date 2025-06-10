@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { useLoadScript, GoogleMap, Libraries, Marker } from "@react-google-maps/api";
+import { useMemo, useRef, useEffect, useState } from "react";
+import { useLoadScript, GoogleMap, Libraries, Marker, InfoWindow } from "@react-google-maps/api";
 
 interface ImagePoint {
   id: string;
@@ -22,9 +22,10 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
   const mapCenter = useMemo(() => ({ lat: 65.66, lng: -3.35 }), []);
   const mapOptions = useMemo<google.maps.MapOptions>(
     () => ({
-      disableDefaultUI: true,
+      disableDefaultUI: false,
       clickableIcons: true,
-      scrollwheel: false,
+      scrollwheel: true,
+      zoomControl: true,
     }),
     []
   );
@@ -33,6 +34,19 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY as string,
     libraries,
   });
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<ImagePoint | null>(null);
+
+  useEffect(() => {
+    if (mapRef.current && imagePoints.length > 0) {
+      const bounds = new window.google.maps.LatLngBounds();
+      imagePoints.forEach((point) => {
+        bounds.extend({ lat: point.lat, lng: point.lng });
+      });
+      mapRef.current.fitBounds(bounds);
+    }
+  }, [imagePoints]);
 
   if (loadError) {
     console.error("Error loading Google Maps:", loadError);
@@ -49,7 +63,16 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
       center={mapCenter}
       zoom={14}
       mapContainerStyle={{ width: "100%", height: "100%" }}
-      onLoad={(map) => console.log("Map loaded:", map)}
+      onLoad={(map) => {
+        mapRef.current = map;
+        if (imagePoints.length > 0) {
+          const bounds = new window.google.maps.LatLngBounds();
+          imagePoints.forEach((point) => {
+            bounds.extend({ lat: point.lat, lng: point.lng });
+          });
+          map.fitBounds(bounds);
+        }
+      }}
     >
       {imagePoints.map((point) => (
         <Marker
@@ -62,8 +85,20 @@ const GoogleMapComponent = ({ imagePoints }: GoogleMapComponentProps) => {
             origin: new google.maps.Point(0, 0),
             anchor: new google.maps.Point(20, 20), // Center the image
           }}
+          onClick={() => setSelectedPoint(point)}
         />
       ))}
+      {selectedPoint && (
+        <InfoWindow
+          position={{ lat: selectedPoint.lat, lng: selectedPoint.lng }}
+          onCloseClick={() => setSelectedPoint(null)}
+        >
+          <div style={{ maxWidth: 300 }}>
+            <img src={selectedPoint.imageUrl} alt={selectedPoint.title || 'Full size'} style={{ width: '100%', height: 'auto', borderRadius: 8 }} />
+            {selectedPoint.title && <div style={{ marginTop: 8, fontWeight: 'bold' }}>{selectedPoint.title}</div>}
+          </div>
+        </InfoWindow>
+      )}
     </GoogleMap>
   );
 };

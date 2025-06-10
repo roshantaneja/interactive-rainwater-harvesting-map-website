@@ -2,16 +2,28 @@
 
 import dynamic from "next/dynamic";
 
-// We dynamically import the GoogleMap component with SSR disabled
-// This is valid because MapWrapper is a Client Component
-const GoogleMapComponent = dynamic(() => import("./components/GoogleMap"), {
-  ssr: false,
-});
+interface ImagePoint {
+  id: string;
+  lat: number;
+  lng: number;
+  imageUrl: string;
+  title?: string;
+}
 
 interface MapWrapperProps {
-  csvData: any[];
+  imagePoints: ImagePoint[];
 }
 
-export default function MapWrapper({ csvData }: MapWrapperProps) {
-  return <GoogleMapComponent csvData={csvData} />;
-}
+const MapWrapper = ({ imagePoints }: MapWrapperProps) => {
+  const GoogleMapComponent = dynamic(
+    () => import("./components/GoogleMap"),
+    {
+      loading: () => <p>Loading map...</p>,
+      ssr: false,
+    }
+  );
+
+  return <GoogleMapComponent imagePoints={imagePoints} />;
+};
+
+export default MapWrapper;
